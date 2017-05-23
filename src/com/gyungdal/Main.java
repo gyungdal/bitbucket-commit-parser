@@ -1,5 +1,7 @@
 package com.gyungdal;
 
+import com.sun.net.ssl.HttpsURLConnection;
+import jdk.nashorn.internal.parser.JSONParser;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -7,8 +9,10 @@ import org.jsoup.select.Elements;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.List;
 
@@ -18,12 +22,40 @@ public class Main {
         page = 1;
     }
     public static void main(String[] args) {
-        new Main().parsing();
+        new Main().branch("https://bitbucket.org/nenohidayo/nenohidayo/commits/branch/master");
     }
-    public void parsing(){
+
+    public void branch(String url){
+        Document doc = null;
         try {
-            Document doc = Jsoup.connect("https://bitbucket.org/nenohidayo/nenohidayo/commits/all" + "?page=" + page)
+            doc = Jsoup.connect(url)
                     .get();
+            //ALL BRANCH PARSING
+            String branchUrl = "https://bitbucket.org" + doc.select("button.aui-button.branch-dialog-trigger").get(0).attr("data-branches-tags-url");
+            System.out.println(branchUrl);
+            String input = Jsoup.connect(branchUrl)
+                    .ignoreContentType(true)
+                    .get().toString();
+            String[] temp = input.split(",");
+            for(String test : temp){
+                if(test.contains("name")){
+                    System.out.println(test.split("\"")[3]);
+                }
+            }
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    public void commit(String commit){
+        try {
+            String url = "https://bitbucket.org/nenohidayo/nenohidayo/commits"
+                     + ((!commit.isEmpty() ? "/branch/" + commit : "") + "?page=" + page);
+            System.out.println(url);
+            Document doc = Jsoup.connect(url)
+                    .get();
+
+            //COMMIT PARSING
             Elements elements = doc.select(".iterable-item");
             for(Element element : elements) {
                 System.out.println("==============================");
@@ -54,8 +86,8 @@ public class Main {
                 }
                 System.out.println("==============================");
             }
-            if(!elements.toString().contains("page=" + (++page)))
-                parsing();
+            if(elements.toString().contains("page=" + (++page)))
+                commit(commit);
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
