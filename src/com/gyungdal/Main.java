@@ -13,14 +13,20 @@ import java.net.URL;
 import java.util.List;
 
 public class Main {
+    private int page;
+    Main(){
+        page = 1;
+    }
     public static void main(String[] args) {
+        new Main().parsing();
+    }
+    public void parsing(){
         try {
-                Document doc = Jsoup.connect("https://bitbucket.org/GyungDal/dormitory/commits")
+            Document doc = Jsoup.connect("https://bitbucket.org/nenohidayo/nenohidayo/commits/all" + "?page=" + page)
                     .get();
             Elements elements = doc.select(".iterable-item");
             for(Element element : elements) {
                 System.out.println("==============================");
-                System.out.println(element.attr("id"));
                 if (!element.toString().contains("unmapped-user")){
                     System.out.println(element.select("td.user > div > span > span > a").get(0).attr("title"));
                     System.out.println(element.select("td.text.flex-content--column > div > div.flex-content--primary > span.subject")
@@ -42,12 +48,14 @@ public class Main {
                     System.out.println(element.select("td.date > div > time").get(0).attr("datetime"));
                 }
                 if(element.select("td.text.flex-content--column > div > div.flex-content--secondary > div > div > dl > dd > a").isEmpty()){
-                    System.out.println("브랜치 없음");
+                    System.out.println("master");
                 }else{
                     System.out.println(element.select("td.text.flex-content--column > div > div.flex-content--secondary > div > div > dl > dd > a").get(0).text());
                 }
                 System.out.println("==============================");
             }
+            if(!elements.toString().contains("page=" + (++page)))
+                parsing();
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
