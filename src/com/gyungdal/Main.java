@@ -22,7 +22,7 @@ public class Main {
         page = 1;
     }
     public static void main(String[] args) {
-        new Main().branch("https://bitbucket.org/nenohidayo/nenohidayo/commits/branch/master");
+        new Main().commit("https://bitbucket.org/nenohidayo/nenohidayo/commits/", "master");
     }
 
     public void branch(String url){
@@ -47,9 +47,11 @@ public class Main {
         }
     }
 
-    public void commit(String commit){
+    public void commit(String URL, String commit){
         try {
-            String url = "https://bitbucket.org/nenohidayo/nenohidayo/commits"
+            if(URL.charAt(URL.length() - 1) == '/')
+                URL = URL.substring(0, URL.length() - 1);
+            String url = URL
                      + ((!commit.isEmpty() ? "/branch/" + commit : "") + "?page=" + page);
             System.out.println(url);
             Document doc = Jsoup.connect(url)
@@ -57,6 +59,10 @@ public class Main {
 
             //COMMIT PARSING
             Elements elements = doc.select(".iterable-item");
+            if(elements.isEmpty()){
+                System.err.println("WHAT????");
+                return;
+            }
             for(Element element : elements) {
                 System.out.println("==============================");
                 if (!element.toString().contains("unmapped-user")){
@@ -87,7 +93,7 @@ public class Main {
                 System.out.println("==============================");
             }
             if(elements.toString().contains("page=" + (++page)))
-                commit(commit);
+                commit(URL, commit);
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
