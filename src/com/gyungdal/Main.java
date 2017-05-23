@@ -15,10 +15,12 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
         try {
-            Document doc = Jsoup.connect("https://bitbucket.org/GyungDal/dormitory/commits")
+                Document doc = Jsoup.connect("https://bitbucket.org/GyungDal/dormitory/commits")
                     .get();
             Elements elements = doc.select(".iterable-item");
             for(Element element : elements) {
+                System.out.println("==============================");
+                System.out.println(element.attr("id"));
                 if (!element.toString().contains("unmapped-user")){
                     System.out.println(element.select("td.user > div > span > span > a").get(0).attr("title"));
                     System.out.println(element.select("td.text.flex-content--column > div > div.flex-content--primary > span.subject")
@@ -29,16 +31,25 @@ public class Main {
                     }
                     System.out.println(element.select("td.date > div > time").get(0).attr("datetime"));
                 } else {
-                    String name = element.select("td.user > div > span > a").get(0).toString();
-
-                    System.out.println();
+                    if(!element.select("span.unmapped-user > span:nth-child(2)").isEmpty()) {
+                        String name = element.select("span.unmapped-user > span:nth-child(2)").get(0).text();
+                        System.out.println(name);
+                    }else{
+                        System.out.println(element.toString());
+                    }
                     System.out.println(element.select("td.text.flex-content--column > div > div.flex-content--primary > span.subject")
                             .get(0).text());
                     System.out.println(element.select("td.date > div > time").get(0).attr("datetime"));
                 }
+                if(element.select("td.text.flex-content--column > div > div.flex-content--secondary > div > div > dl > dd > a").isEmpty()){
+                    System.out.println("브랜치 없음");
+                }else{
+                    System.out.println(element.select("td.text.flex-content--column > div > div.flex-content--secondary > div > div > dl > dd > a").get(0).text());
+                }
+                System.out.println("==============================");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
     }
 }
